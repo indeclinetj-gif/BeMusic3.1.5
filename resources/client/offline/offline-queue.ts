@@ -46,17 +46,21 @@ class _OfflineQueue extends BaseOfflineDb<
   async deleteTracksQueuedBy(offlinedBy: OfflinedBy) {
     const refId = this.refId(undefined, offlinedBy);
     const tracks = await this.getAllItems('offlinedBy', refId);
-    for (const track of tracks) {
+    const promises = tracks.map(track => {
       if (track.offlinedBy.length === 1 && track.offlinedBy[0] === refId) {
-        this.deleteTrack(track.id);
+        return this.deleteItem(track.id).then(() => {
+          this.activeDownloads.delete(track.id);
+        });
       } else {
         const newRefs = track.offlinedBy.filter(ref => ref !== refId);
-        this.putItem({
+        return this.putItem({
           ...track,
           offlinedBy: newRefs,
         });
       }
-    }
+    });
+    await Promise.all(promises);
+    this.runQueue();
   }
 
   async runQueue() {

@@ -139,9 +139,7 @@ class _OfflinedTracks extends BaseOfflineDb<OfflinedTrack> {
 
   async deleteTracksOfflinedBy(item: OfflinedBy): Promise<boolean> {
     const tracks = await this.getTracksOfflinedBy(item);
-    for (const track of tracks) {
-      await this.deleteTrack(track.id, item);
-    }
+    await Promise.all(tracks.map(track => this.deleteTrack(track.id, item)));
     return true;
   }
 
