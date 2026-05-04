@@ -16,16 +16,23 @@ class PlaylistTracksOrderController extends BaseController {
             'ids.*' => 'integer'
         ]);
 
+        $ids = request()->get('ids');
         $queryPart = '';
-        foreach(request()->get('ids') as $position => $id) {
+        $bindings = [];
+        foreach ($ids as $position => $id) {
             $position++;
-            $queryPart .= " when track_id=$id then $position";
+            $queryPart .= ' when track_id=? then ?';
+            $bindings[] = $id;
+            $bindings[] = $position;
         }
 
-        DB::table('playlist_track')
-            ->where('playlist_id', $playlist->id)
-            ->whereIn('track_id', request()->get('ids'))
-            ->update(['position' => DB::raw("(case $queryPart end)")]);
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $prefix = DB::getTablePrefix();
+
+        DB::update(
+            "update {$prefix}playlist_track set `position` = (case $queryPart end) where playlist_id = ? and track_id in ($placeholders)",
+            [...$bindings, $playlist->id, ...$ids],
+        );
 
         return $this->success();
     }

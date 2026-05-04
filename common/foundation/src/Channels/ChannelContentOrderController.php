@@ -22,15 +22,25 @@ class ChannelContentOrderController extends BaseController
         ]);
 
         $queryPart = '';
+        $bindings = [];
         foreach ($data['ids'] as $order => $id) {
-            $queryPart .= " when channelable_id=$id then $order";
+            $queryPart .= ' when channelable_id=? then ?';
+            $bindings[] = $id;
+            $bindings[] = $order;
         }
 
-        DB::table('channelables')
-            ->where('channel_id', $channel->id)
-            ->whereIn('channelable_id', $data['ids'])
-            ->where('channelable_type', $data['modelType'])
-            ->update(['order' => DB::raw("(case $queryPart end)")]);
+        $placeholders = implode(',', array_fill(0, count($data['ids']), '?'));
+        $prefix = DB::getTablePrefix();
+
+        DB::update(
+            "update {$prefix}channelables set `order` = (case $queryPart end) where channel_id = ? and channelable_type = ? and channelable_id in ($placeholders)",
+            [
+                ...$bindings,
+                $channel->id,
+                $data['modelType'],
+                ...$data['ids'],
+            ],
+        );
 
         // update timestamp to trigger cache invalidation
         $channel->touch();
