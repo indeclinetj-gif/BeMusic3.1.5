@@ -151,5 +151,5 @@
       "Composer\\Config::disableProcessTimeout",
       "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"meilisearch\" \"php artisan queue:listen --tries=1\" \"php artisan pail --timeout=0\" \"npm run dev\" --names=reverb,meilisearch,queue,logs,vite"
     ]
-  }
+  },
 }
