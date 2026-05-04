@@ -11,13 +11,11 @@ use Common\Files\Actions\StoreFile;
 use Common\Files\FileEntry;
 use Common\Files\FileEntryPayload;
 use Common\Files\Traits\GetsEntryTypeFromMime;
-use Common\Files\Uploads\UploadType;
 use Common\Settings\Settings;
 use getID3;
 use getid3_lib;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
 
 class ExtractMetadataFromTrackFile
 {
