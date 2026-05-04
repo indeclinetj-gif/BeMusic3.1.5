@@ -118,14 +118,16 @@ export function useTrackUploader(options: Options) {
         });
       });
       uploadMultiple(files, uploadOptions);
-      for (const file of files) {
-        updateUpload(file.id, {isGeneratingWave: true});
-        const waveData = await generateWaveformData(file.native);
-        if (waveData) {
-          optionsRef.current.onMetadataChange(file, {waveData});
-        }
-        updateUpload(file.id, {isGeneratingWave: false});
-      }
+      await Promise.all(
+        files.map(async file => {
+          updateUpload(file.id, {isGeneratingWave: true});
+          const waveData = await generateWaveformData(file.native);
+          if (waveData) {
+            optionsRef.current.onMetadataChange(file, {waveData});
+          }
+          updateUpload(file.id, {isGeneratingWave: false});
+        }),
+      );
     },
     [uploadOptions, uploadMultiple, updateUpload, validateUploads],
   );
